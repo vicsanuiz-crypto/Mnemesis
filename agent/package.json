@@ -1,0 +1,24 @@
+{
+  "name": "mnemesis-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Brain that drives the Mnemesis Android accessibility service to complete natural-language tasks.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "tsc -p . && node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

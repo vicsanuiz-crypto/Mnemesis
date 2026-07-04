@@ -1,0 +1,16 @@
+# Android
+android/local.properties
+android/.gradle/
+android/**/build/
+android/.idea/
+android/*.iml
+android/captures/
+android/.cxx/
+
+# Node / agent
+agent/node_modules/
+agent/dist/
+agent/.env
+
+# OS
+.DS_Store
