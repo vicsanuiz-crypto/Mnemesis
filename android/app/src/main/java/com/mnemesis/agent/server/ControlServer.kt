@@ -77,6 +77,8 @@ class ControlServer(
                 json.optLong("durationMs", 300L)
             )
 
+            "open_app" -> service.openApp(json.getString("query"))
+
             "click_node" -> service.clickNode(json.getInt("nodeId"))
 
             "type_text" -> service.typeText(json.getInt("nodeId"), json.getString("text"))

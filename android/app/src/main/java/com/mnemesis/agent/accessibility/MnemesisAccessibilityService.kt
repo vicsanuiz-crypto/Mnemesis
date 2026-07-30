@@ -2,6 +2,8 @@ package com.mnemesis.agent.accessibility
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -88,6 +90,44 @@ class MnemesisAccessibilityService : AccessibilityService() {
     fun clickNode(nodeId: Int): Boolean {
         val target = findNodeById(nodeId) ?: return false
         return target.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+    }
+
+    /**
+     * Launches an app by package name or by (partial) visible label, so the agent
+     * can open apps directly instead of hunting for icons on the home screens.
+     */
+    fun openApp(query: String): Boolean {
+        val pm = packageManager
+
+        // 1) Treat the query as an exact package name first.
+        pm.getLaunchIntentForPackage(query)?.let { return launch(it) }
+
+        // 2) Otherwise match against installed apps' visible labels.
+        val normalized = query.trim().lowercase()
+        val launchable = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            .filter { pm.getLaunchIntentForPackage(it.packageName) != null }
+
+        val exact = launchable.firstOrNull {
+            pm.getApplicationLabel(it).toString().lowercase() == normalized
+        }
+        val partial = exact ?: launchable.firstOrNull {
+            pm.getApplicationLabel(it).toString().lowercase().contains(normalized)
+        }
+
+        val target = partial ?: return false
+        val intent = pm.getLaunchIntentForPackage(target.packageName) ?: return false
+        return launch(intent)
+    }
+
+    private fun launch(intent: Intent): Boolean {
+        return try {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to launch app", e)
+            false
+        }
     }
 
     fun back(): Boolean = performGlobalAction(GLOBAL_ACTION_BACK)

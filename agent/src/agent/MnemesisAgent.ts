@@ -42,6 +42,22 @@ const FUNCTION_DECLARATIONS: FunctionDeclaration[] = [
     },
   },
   {
+    name: "open_app",
+    description:
+      "Abre una app por su nombre visible (p. ej. 'calculadora', 'whatsapp', 'ajustes'). " +
+      "Es la forma preferida de abrir cualquier app: no hace falta buscar su icono en el escritorio.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: {
+        query: {
+          type: SchemaType.STRING,
+          description: "Nombre de la app tal como aparece en el teléfono, o su package name.",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
     name: "click_node",
     description:
       "Pulsa el nodo de accesibilidad con el id indicado (preferido frente a tap cuando el nodo está en la lista).",
@@ -196,6 +212,8 @@ export class MnemesisAgent {
           args.y2 as number,
           (args.durationMs as number) ?? 300
         );
+      case "open_app":
+        return this.device.openApp(args.query as string);
       case "click_node":
         return this.device.clickNode(args.nodeId as number);
       case "type_text":

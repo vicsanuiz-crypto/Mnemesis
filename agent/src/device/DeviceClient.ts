@@ -33,6 +33,10 @@ export class DeviceClient {
     return this.postAction({ type: "swipe", x1, y1, x2, y2, durationMs });
   }
 
+  async openApp(query: string): Promise<ActionResult> {
+    return this.postAction({ type: "open_app", query });
+  }
+
   async clickNode(nodeId: number): Promise<ActionResult> {
     return this.postAction({ type: "click_node", nodeId });
   }
