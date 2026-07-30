@@ -1,52 +1,64 @@
-import Anthropic from "@anthropic-ai/sdk";
+import {
+  type Content,
+  type FunctionDeclaration,
+  FunctionCallingMode,
+  type GenerativeModel,
+  type GoogleGenerativeAI,
+  SchemaType,
+} from "@google/generative-ai";
 import type { DeviceClient } from "../device/DeviceClient.js";
 import { SYSTEM_PROMPT, describeSnapshot } from "./prompts.js";
 
-const TOOLS: Anthropic.Tool[] = [
+const FUNCTION_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: "tap",
     description: "Toca la pantalla en unas coordenadas de píxel absolutas.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: SchemaType.OBJECT,
       properties: {
-        x: { type: "number" },
-        y: { type: "number" },
+        x: { type: SchemaType.NUMBER },
+        y: { type: SchemaType.NUMBER },
       },
       required: ["x", "y"],
     },
   },
   {
     name: "swipe",
-    description: "Desliza el dedo entre dos puntos de la pantalla (scroll, deslizar para cerrar, etc.).",
-    input_schema: {
-      type: "object",
+    description:
+      "Desliza el dedo entre dos puntos de la pantalla (scroll, deslizar para cerrar, etc.).",
+    parameters: {
+      type: SchemaType.OBJECT,
       properties: {
-        x1: { type: "number" },
-        y1: { type: "number" },
-        x2: { type: "number" },
-        y2: { type: "number" },
-        durationMs: { type: "number", description: "Duración del gesto en ms (por defecto 300)." },
+        x1: { type: SchemaType.NUMBER },
+        y1: { type: SchemaType.NUMBER },
+        x2: { type: SchemaType.NUMBER },
+        y2: { type: SchemaType.NUMBER },
+        durationMs: {
+          type: SchemaType.NUMBER,
+          description: "Duración del gesto en ms (por defecto 300).",
+        },
       },
       required: ["x1", "y1", "x2", "y2"],
     },
   },
   {
     name: "click_node",
-    description: "Pulsa el nodo de accesibilidad con el id indicado (preferido frente a tap cuando el nodo está en la lista).",
-    input_schema: {
-      type: "object",
-      properties: { nodeId: { type: "number" } },
+    description:
+      "Pulsa el nodo de accesibilidad con el id indicado (preferido frente a tap cuando el nodo está en la lista).",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: { nodeId: { type: SchemaType.NUMBER } },
       required: ["nodeId"],
     },
   },
   {
     name: "type_text",
     description: "Escribe texto en el nodo editable con el id indicado.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: SchemaType.OBJECT,
       properties: {
-        nodeId: { type: "number" },
-        text: { type: "string" },
+        nodeId: { type: SchemaType.NUMBER },
+        text: { type: SchemaType.STRING },
       },
       required: ["nodeId", "text"],
     },
@@ -54,35 +66,33 @@ const TOOLS: Anthropic.Tool[] = [
   {
     name: "back",
     description: "Pulsa el botón/gesto de retroceso del sistema.",
-    input_schema: { type: "object", properties: {} },
   },
   {
     name: "home",
     description: "Va a la pantalla de inicio.",
-    input_schema: { type: "object", properties: {} },
   },
   {
     name: "recents",
     description: "Abre la vista de apps recientes.",
-    input_schema: { type: "object", properties: {} },
   },
   {
     name: "wait",
-    description: "Espera un momento (p. ej. mientras carga una app) antes de volver a mirar la pantalla.",
-    input_schema: {
-      type: "object",
-      properties: { ms: { type: "number" } },
+    description:
+      "Espera un momento (p. ej. mientras carga una app) antes de volver a mirar la pantalla.",
+    parameters: {
+      type: SchemaType.OBJECT,
+      properties: { ms: { type: SchemaType.NUMBER } },
       required: ["ms"],
     },
   },
   {
     name: "finish",
     description: "Termina la tarea: indica si se completó con éxito y un resumen breve.",
-    input_schema: {
-      type: "object",
+    parameters: {
+      type: SchemaType.OBJECT,
       properties: {
-        success: { type: "boolean" },
-        summary: { type: "string" },
+        success: { type: SchemaType.BOOLEAN },
+        summary: { type: SchemaType.STRING },
       },
       required: ["success", "summary"],
     },
@@ -96,61 +106,73 @@ export interface AgentRunResult {
 }
 
 export class MnemesisAgent {
+  private readonly model: GenerativeModel;
+
   constructor(
-    private readonly anthropic: Anthropic,
+    genAI: GoogleGenerativeAI,
     private readonly device: DeviceClient,
-    private readonly model: string,
+    modelName: string,
     private readonly maxSteps: number
-  ) {}
+  ) {
+    this.model = genAI.getGenerativeModel({
+      model: modelName,
+      systemInstruction: SYSTEM_PROMPT,
+      tools: [{ functionDeclarations: FUNCTION_DECLARATIONS }],
+      // Fuerza al modelo a llamar siempre a una de las herramientas declaradas.
+      toolConfig: { functionCallingConfig: { mode: FunctionCallingMode.ANY } },
+    });
+  }
 
   async run(task: string): Promise<AgentRunResult> {
-    const messages: Anthropic.MessageParam[] = [];
+    const contents: Content[] = [];
 
     let snapshot = await this.device.getUi();
-    messages.push({
+    contents.push({
       role: "user",
-      content: `Tarea: ${task}\n\n${describeSnapshot(snapshot)}`,
+      parts: [{ text: `Tarea: ${task}\n\n${describeSnapshot(snapshot)}` }],
     });
 
     for (let step = 1; step <= this.maxSteps; step++) {
-      const response = await this.anthropic.messages.create({
-        model: this.model,
-        max_tokens: 1024,
-        system: SYSTEM_PROMPT,
-        tools: TOOLS,
-        tool_choice: { type: "any" },
-        messages,
-      });
+      const result = await this.model.generateContent({ contents });
+      const response = result.response;
 
-      messages.push({ role: "assistant", content: response.content });
+      const call = response.functionCalls()?.[0];
 
-      const toolUse = response.content.find(
-        (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
-      );
+      // Conserva el turno del modelo en el historial para el siguiente ciclo.
+      const modelParts = response.candidates?.[0]?.content?.parts ?? [];
+      contents.push({ role: "model", parts: modelParts });
 
-      if (!toolUse) {
-        throw new Error("El modelo no llamó a ninguna herramienta pese a tool_choice=any.");
+      if (!call) {
+        throw new Error(
+          "El modelo no llamó a ninguna herramienta pese a functionCallingConfig=ANY."
+        );
       }
 
-      console.log(`[paso ${step}] ${toolUse.name}(${JSON.stringify(toolUse.input)})`);
+      const args = (call.args ?? {}) as Record<string, unknown>;
+      console.log(`[paso ${step}] ${call.name}(${JSON.stringify(args)})`);
 
-      if (toolUse.name === "finish") {
-        const input = toolUse.input as { success: boolean; summary: string };
-        return { success: input.success, summary: input.summary, steps: step };
+      if (call.name === "finish") {
+        return {
+          success: Boolean(args.success),
+          summary: String(args.summary ?? ""),
+          steps: step,
+        };
       }
 
-      const actionResult = await this.executeTool(toolUse.name, toolUse.input as Record<string, unknown>);
+      const actionResult = await this.executeTool(call.name, args);
       await sleep(400);
       snapshot = await this.device.getUi();
 
-      messages.push({
+      contents.push({
         role: "user",
-        content: [
+        parts: [
           {
-            type: "tool_result",
-            tool_use_id: toolUse.id,
-            content: `Resultado: ${JSON.stringify(actionResult)}\n\n${describeSnapshot(snapshot)}`,
+            functionResponse: {
+              name: call.name,
+              response: { result: actionResult },
+            },
           },
+          { text: describeSnapshot(snapshot) },
         ],
       });
     }
@@ -162,22 +184,22 @@ export class MnemesisAgent {
     };
   }
 
-  private async executeTool(name: string, input: Record<string, unknown>) {
+  private async executeTool(name: string, args: Record<string, unknown>) {
     switch (name) {
       case "tap":
-        return this.device.tap(input.x as number, input.y as number);
+        return this.device.tap(args.x as number, args.y as number);
       case "swipe":
         return this.device.swipe(
-          input.x1 as number,
-          input.y1 as number,
-          input.x2 as number,
-          input.y2 as number,
-          (input.durationMs as number) ?? 300
+          args.x1 as number,
+          args.y1 as number,
+          args.x2 as number,
+          args.y2 as number,
+          (args.durationMs as number) ?? 300
         );
       case "click_node":
-        return this.device.clickNode(input.nodeId as number);
+        return this.device.clickNode(args.nodeId as number);
       case "type_text":
-        return this.device.typeText(input.nodeId as number, input.text as string);
+        return this.device.typeText(args.nodeId as number, args.text as string);
       case "back":
         return this.device.back();
       case "home":
@@ -185,7 +207,7 @@ export class MnemesisAgent {
       case "recents":
         return this.device.recents();
       case "wait":
-        await sleep(input.ms as number);
+        await sleep(args.ms as number);
         return { ok: true };
       default:
         return { ok: false, error: `herramienta desconocida: ${name}` };

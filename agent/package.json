@@ -2,7 +2,7 @@
   "name": "mnemesis-agent",
   "version": "0.1.0",
   "private": true,
-  "description": "Brain that drives the Mnemesis Android accessibility service to complete natural-language tasks.",
+  "description": "Brain that drives the Mnemesis Android accessibility service to complete natural-language tasks (Google Gemini backend).",
   "type": "module",
   "scripts": {
     "build": "tsc -p .",
@@ -10,7 +10,7 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.30.0",
+    "@google/generative-ai": "^0.21.0",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

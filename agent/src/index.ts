@@ -1,28 +1,30 @@
 import "dotenv/config";
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { DeviceClient } from "./device/DeviceClient.js";
 import { MnemesisAgent } from "./agent/MnemesisAgent.js";
 
 async function main() {
   const task = process.argv.slice(2).join(" ").trim();
   if (!task) {
-    console.error('Uso: npm start -- "abre WhatsApp y manda un mensaje a Juan diciendo hola"');
+    console.error('Uso: npm start -- "abre los ajustes y dime qué versión de Android tengo"');
     process.exit(1);
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error("Falta ANTHROPIC_API_KEY. Copia agent/.env.example a agent/.env y rellénalo.");
+    console.error(
+      "Falta GEMINI_API_KEY. Copia agent/.env.example a agent/.env y pega tu clave de Google AI Studio."
+    );
     process.exit(1);
   }
 
   const deviceUrl = process.env.MNEMESIS_DEVICE_URL ?? "http://127.0.0.1:8734";
-  const model = process.env.MNEMESIS_MODEL ?? "claude-sonnet-5";
+  const model = process.env.MNEMESIS_MODEL ?? "gemini-2.5-flash";
   const maxSteps = Number(process.env.MNEMESIS_MAX_STEPS ?? 25);
 
-  const anthropic = new Anthropic({ apiKey });
+  const genAI = new GoogleGenerativeAI(apiKey);
   const device = new DeviceClient(deviceUrl);
-  const agent = new MnemesisAgent(anthropic, device, model, maxSteps);
+  const agent = new MnemesisAgent(genAI, device, model, maxSteps);
 
   console.log(`Mnemesis: conectando con el dispositivo en ${deviceUrl}...`);
   const health = await fetch(`${deviceUrl}/health`).catch(() => null);
@@ -34,7 +36,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Mnemesis: iniciando tarea -> "${task}"`);
+  console.log(`Mnemesis: iniciando tarea -> "${task}" (modelo: ${model})`);
   const result = await agent.run(task);
 
   console.log("\n--- Resultado ---");
