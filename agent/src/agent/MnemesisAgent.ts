@@ -149,7 +149,7 @@ export class MnemesisAgent {
     });
 
     for (let step = 1; step <= this.maxSteps; step++) {
-      const result = await this.model.generateContent({ contents });
+      const result = await this.generateWithRetry(contents);
       const response = result.response;
 
       const call = response.functionCalls()?.[0];
@@ -176,7 +176,8 @@ export class MnemesisAgent {
       }
 
       const actionResult = await this.executeTool(call.name, args);
-      await sleep(400);
+      // Abrir una app tarda en cargar: dale tiempo antes de volver a leer la pantalla.
+      await sleep(call.name === "open_app" ? 1500 : 400);
       snapshot = await this.device.getUi();
 
       contents.push({
@@ -198,6 +199,35 @@ export class MnemesisAgent {
       summary: `Se alcanzó el máximo de pasos (${this.maxSteps}) sin que el agente terminara la tarea.`,
       steps: this.maxSteps,
     };
+  }
+
+  /**
+   * Llama a Gemini reintentando ante el límite de peticiones del plan gratuito
+   * (429). Respeta el retryDelay que sugiere la propia API cuando está presente.
+   */
+  private async generateWithRetry(contents: Content[], maxRetries = 5) {
+    let attempt = 0;
+    for (;;) {
+      try {
+        return await this.model.generateContent({ contents });
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        const status = (err as { status?: number })?.status;
+        const isRateLimit =
+          status === 429 || /\b429\b|too many requests|quota/i.test(message);
+
+        if (!isRateLimit || attempt >= maxRetries) throw err;
+
+        attempt++;
+        const waitMs = parseRetryDelayMs(message) ?? Math.min(60000, 15000 * attempt);
+        console.log(
+          `  (límite de peticiones de Gemini alcanzado; espero ${Math.round(
+            waitMs / 1000
+          )}s y reintento —  intento ${attempt}/${maxRetries})`
+        );
+        await sleep(waitMs);
+      }
+    }
   }
 
   private async executeTool(name: string, args: Record<string, unknown>) {
@@ -235,4 +265,14 @@ export class MnemesisAgent {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Extrae el retardo sugerido por la API de un mensaje 429 (p. ej. "retryDelay":"49s"). */
+function parseRetryDelayMs(message: string): number | null {
+  const json = message.match(/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/i);
+  const prose = message.match(/retry in\s+(\d+(?:\.\d+)?)\s*s/i);
+  const seconds = json?.[1] ?? prose?.[1];
+  if (!seconds) return null;
+  // +1s de margen para asegurarnos de que la ventana ya se ha reabierto.
+  return Math.round(parseFloat(seconds) * 1000) + 1000;
 }
