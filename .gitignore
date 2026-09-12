@@ -1,19 +1,9 @@
-# Android
-android/local.properties
-android/.gradle/
-android/**/build/
-android/.idea/
-android/*.iml
-android/captures/
-android/.cxx/
+# Informe generado: se reconstruye con engine/report.py
+out/
 
-# Node / agent
-agent/node_modules/
-agent/dist/
-agent/.env
+# Python
+__pycache__/
+*.pyc
 
 # OS
 .DS_Store
-
-# graphify (grafo generado, se reconstruye)
-graphify-out/

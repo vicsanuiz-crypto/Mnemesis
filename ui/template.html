@@ -1,0 +1,830 @@
+<title>Mnemesis Forge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#ECEEF1; --surface:#FCFCFB; --surface2:#F4F5F7; --surface3:#E9ECEF;
+  --border:#D5DADF; --border-strong:#B9C1CA;
+  --ink:#14181D; --ink2:#5A636E; --ink3:#858E99;
+  --mat:#0C7BB8; --fuel:#C2571B;
+  --c1:#0C7BB8; --c2:#C2571B; --c3:#6B4FB5; --c4:#8F6A00;
+  --ok:#2F7D53; --lim:#A06F0F; --bad:#B23A34; --nd:#6B7480;
+  --ok-bg:#E4F1E9; --lim-bg:#F7EEDB; --bad-bg:#F7E4E2; --nd-bg:#EDEFF1;
+  --ramp0:#EAF3F9; --ramp1:#C3DFEF; --ramp2:#8CC3E1; --ramp3:#4C9FCC; --ramp4:#1C74A8; --ramp5:#0D4F76;
+  --shadow:0 1px 2px rgba(20,24,29,.06),0 4px 14px rgba(20,24,29,.07);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1216; --surface:#171C22; --surface2:#1E252D; --surface3:#252E37;
+  --border:#2B343E; --border-strong:#3C4753;
+  --ink:#E4E9ED; --ink2:#939DA9; --ink3:#6F7983;
+  --mat:#3A97CC; --fuel:#DE7038;
+  --c1:#3A97CC; --c2:#DE7038; --c3:#8E76DC; --c4:#B08B1E;
+  --ok:#4FAE79; --lim:#D2A03F; --bad:#E0736A; --nd:#7E8894;
+  --ok-bg:#17301F; --lim-bg:#312611; --bad-bg:#351C1A; --nd-bg:#222A32;
+  --ramp0:#122631; --ramp1:#17384A; --ramp2:#1D5070; --ramp3:#256E97; --ramp4:#3A93C4; --ramp5:#68B5DF;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1216; --surface:#171C22; --surface2:#1E252D; --surface3:#252E37;
+  --border:#2B343E; --border-strong:#3C4753;
+  --ink:#E4E9ED; --ink2:#939DA9; --ink3:#6F7983;
+  --mat:#3A97CC; --fuel:#DE7038;
+  --c1:#3A97CC; --c2:#DE7038; --c3:#8E76DC; --c4:#B08B1E;
+  --ok:#4FAE79; --lim:#D2A03F; --bad:#E0736A; --nd:#7E8894;
+  --ok-bg:#17301F; --lim-bg:#312611; --bad-bg:#351C1A; --nd-bg:#222A32;
+  --ramp0:#122631; --ramp1:#17384A; --ramp2:#1D5070; --ramp3:#256E97; --ramp4:#3A93C4; --ramp5:#68B5DF;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",sans-serif;
+  font-weight:600;margin:0;text-wrap:balance;letter-spacing:-.005em}
+.mono,td.num,.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+a{color:var(--mat)}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--mat);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
+
+/* ---------- cabecera ---------- */
+header.top{background:var(--surface);border-bottom:1px solid var(--border)}
+.topgrid{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between;padding-block:20px 16px}
+.brand{display:flex;flex-direction:column;gap:3px;min-width:0}
+.brand .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink3)}
+.brand h1{font-size:26px;line-height:1.1}
+.brand p{margin:2px 0 0;color:var(--ink2);font-size:13px;max-width:62ch}
+.runstats{display:flex;gap:22px;flex-wrap:wrap}
+.runstat{display:flex;flex-direction:column;gap:1px}
+.runstat b{font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;letter-spacing:-.02em}
+.runstat span{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.themebtn{background:var(--surface2);border:1px solid var(--border);color:var(--ink2);
+  border-radius:6px;padding:5px 9px;font-size:12px;align-self:flex-start}
+
+/* ---------- pestanas ---------- */
+nav.tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:30}
+.tabrow{display:flex;gap:2px;overflow-x:auto;scrollbar-width:thin}
+.tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--ink2);
+  padding:11px 14px;white-space:nowrap;font-weight:500;font-size:13.5px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--mat);font-weight:600}
+.tab:hover{color:var(--ink)}
+
+main{padding-block:22px 56px}
+section.panel{display:flex;flex-direction:column;gap:18px}
+
+/* ---------- bloques ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:9px}
+.card>.hd{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;
+  flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.card>.hd h3{font-size:15.5px}
+.card>.hd .sub{color:var(--ink2);font-size:12.5px}
+.card>.bd{padding:16px}
+.card>.bd.flush{padding:0}
+
+.thesis{border-left:3px solid var(--mat);background:var(--surface2);padding:12px 15px;
+  border-radius:0 7px 7px 0;color:var(--ink2);font-size:13.5px}
+.thesis b{color:var(--ink);font-weight:600}
+.panel-fuel .thesis{border-left-color:var(--fuel)}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:6px 13px;color:var(--ink2);font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--mat);border-color:var(--mat);color:#fff;font-weight:600}
+.panel-fuel .chip[aria-pressed="true"]{background:var(--fuel);border-color:var(--fuel)}
+.chip:hover:not([aria-pressed="true"]){border-color:var(--border-strong);color:var(--ink)}
+
+/* ---------- embudo ---------- */
+.funnel{display:flex;flex-direction:column;gap:7px}
+.frow{display:grid;grid-template-columns:132px 1fr 108px;gap:10px;align-items:center}
+.frow .lbl{font-size:12.5px;color:var(--ink2)}
+.fbar{height:20px;background:var(--surface3);border-radius:0 4px 4px 0;overflow:hidden}
+.fbar i{display:block;height:100%;background:var(--mat);border-radius:0 4px 4px 0}
+.frow .val{font-family:"IBM Plex Mono",monospace;font-size:12.5px;text-align:right;color:var(--ink)}
+.frow .val em{color:var(--ink3);font-style:normal;font-size:10.5px;white-space:nowrap}
+
+/* ---------- tablas ---------- */
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;font-weight:600;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink3);padding:9px 10px;border-bottom:1px solid var(--border);white-space:nowrap;
+  background:var(--surface2);position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+td.num{text-align:right}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--surface2)}
+tbody tr.bench{background:var(--surface2)}
+tbody tr.bench td:first-child{font-style:italic}
+.rank{font-family:"IBM Plex Mono",monospace;color:var(--ink3);font-size:12px}
+.nm{font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:12.5px}
+
+.score{display:inline-flex;align-items:center;gap:7px}
+.score b{font-family:"IBM Plex Mono",monospace;font-size:13px;min-width:36px;text-align:right}
+.sbar{width:52px;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.sbar i{display:block;height:100%;background:var(--mat);border-radius:3px}
+.panel-fuel .sbar i{background:var(--fuel)}
+
+.pill{display:inline-block;padding:1.5px 7px;border-radius:4px;font-size:11px;font-weight:600;
+  letter-spacing:.01em;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.lim{background:var(--lim-bg);color:var(--lim)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.pill.nd{background:var(--nd-bg);color:var(--nd)}
+.tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10.5px;font-weight:500;
+  border:1px solid var(--border-strong);color:var(--ink2);font-family:"IBM Plex Mono",monospace}
+
+/* ---------- graficos ---------- */
+.figure{display:flex;flex-direction:column;gap:9px}
+.legend{display:flex;flex-wrap:wrap;gap:13px;font-size:12px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:10px;height:10px;border-radius:2px;flex:none}
+svg text{font-family:"IBM Plex Mono",monospace}
+.chartbox{position:relative}
+#tip{position:fixed;z-index:90;pointer-events:none;background:var(--surface);
+  border:1px solid var(--border-strong);border-radius:7px;padding:9px 11px;box-shadow:var(--shadow);
+  font-size:12.5px;max-width:280px;line-height:1.45}
+#tip b{font-family:"IBM Plex Mono",monospace}
+#tip[hidden]{display:none}
+
+/* ---------- matriz ---------- */
+.matrix{overflow-x:auto}
+.matrix table{font-size:12px;min-width:760px}
+.matrix th.rot{height:152px;vertical-align:bottom;padding:0 0 8px;background:var(--surface);
+  position:static;width:46px;overflow:visible}
+.matrix th.rot div{transform:rotate(-90deg) translateX(-4px);transform-origin:left bottom;
+  width:144px;text-align:left;font-size:10.5px;letter-spacing:.04em;white-space:nowrap}
+.matrix td.cell{text-align:center;padding:0;width:46px;cursor:help}
+.matrix td.cell i{display:block;height:30px;line-height:30px;font-style:normal;
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;
+  border-radius:3px;margin:2px}
+.matrix td.mname{position:sticky;left:0;background:var(--surface);font-weight:500;
+  border-right:1px solid var(--border)}
+
+/* ---------- tabla periodica ---------- */
+.ptable{display:grid;grid-template-columns:repeat(18,minmax(30px,1fr));gap:2px;min-width:640px}
+.pt-wrap{overflow-x:auto;padding-bottom:4px}
+.el{aspect-ratio:1;border-radius:3px;border:1px solid var(--border);background:var(--surface2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  cursor:help;padding:1px;min-width:0}
+.el b{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;line-height:1.1}
+.el s{font-family:"IBM Plex Mono",monospace;font-size:8.5px;text-decoration:none;opacity:.65;line-height:1}
+.el.dim{opacity:.28}
+.ptgap{grid-column:span 1}
+
+/* ---------- cajon de detalle ---------- */
+.drawer{position:fixed;inset:0;z-index:80;display:flex;justify-content:flex-end;
+  background:rgba(10,14,18,.42)}
+.drawer[hidden]{display:none}
+.dpane{background:var(--surface);width:min(620px,100%);height:100%;overflow-y:auto;
+  border-left:1px solid var(--border);display:flex;flex-direction:column}
+.dhd{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:15px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.dhd h2{font-size:19px;font-family:"IBM Plex Mono",monospace;font-weight:600}
+.dhd .sub{color:var(--ink2);font-size:12.5px;margin-top:2px}
+.dclose{background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  color:var(--ink2);width:30px;height:30px;font-size:16px;line-height:1;flex:none}
+.dbd{padding:18px;display:flex;flex-direction:column;gap:18px}
+.dsec h4{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);
+  margin-bottom:9px;font-family:"IBM Plex Sans",sans-serif;font-weight:600}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.kv>div{background:var(--surface);padding:8px 11px;display:flex;justify-content:space-between;gap:10px}
+.kv dt{color:var(--ink2);font-size:12.5px}
+.kv dd{margin:0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;text-align:right}
+.test{border:1px solid var(--border);border-radius:7px;padding:10px 12px;margin-bottom:7px}
+.test .th{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:5px}
+.test .th b{font-size:13px}
+.test p{margin:0;color:var(--ink2);font-size:12.5px;line-height:1.5}
+.note{color:var(--ink2);font-size:12.5px;line-height:1.55;margin:0}
+.warn{background:var(--lim-bg);border:1px solid var(--lim);border-radius:7px;padding:10px 12px;
+  color:var(--ink);font-size:12.5px;line-height:1.5}
+.warn b{color:var(--lim)}
+
+/* ---------- metodo ---------- */
+.prose{max-width:68ch;display:flex;flex-direction:column;gap:14px}
+.prose p{margin:0;color:var(--ink2);line-height:1.65}
+.prose h3{font-size:17px;margin-top:8px;color:var(--ink)}
+.prose h4{font-size:14px;color:var(--ink);margin-top:4px}
+.prose ul{margin:0;padding-left:18px;color:var(--ink2);line-height:1.65}
+.prose li{margin-bottom:5px}
+.prose code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;background:var(--surface2);
+  padding:1px 5px;border-radius:3px;color:var(--ink)}
+.verdict{border:1px solid var(--bad);background:var(--bad-bg);border-radius:9px;padding:16px 18px}
+.verdict h3{color:var(--bad);margin-bottom:7px;font-size:16px}
+.verdict p{color:var(--ink);margin:0 0 9px;line-height:1.6}
+.verdict p:last-child{margin-bottom:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+
+@media (max-width:640px){
+  .brand h1{font-size:21px}
+  .runstat b{font-size:16px}
+  .frow{grid-template-columns:86px 1fr 88px}
+  .kv{grid-template-columns:1fr}
+  .topgrid{gap:14px}
+}
+</style>
+
+<header class="top">
+  <div class="wrap topgrid">
+    <div class="brand">
+      <div class="eyebrow">Cribado computacional de materiales y combustibles</div>
+      <h1>Mnemesis Forge</h1>
+      <p>Combina los elementos de la tabla periodica, los somete a entornos reales de
+         servicio y ordena lo que sobrevive por su potencial de comercializacion.</p>
+    </div>
+    <div class="runstats" id="runstats"></div>
+    <button class="themebtn" id="themebtn" type="button">Tema</button>
+  </div>
+</header>
+
+<nav class="tabs"><div class="wrap"><div class="tabrow" role="tablist" id="tabrow"></div></div></nav>
+
+<main class="wrap">
+  <section class="panel" id="p-materiales" role="tabpanel"></section>
+  <section class="panel panel-fuel" id="p-combustibles" role="tabpanel" hidden></section>
+  <section class="panel" id="p-ensayos" role="tabpanel" hidden></section>
+  <section class="panel" id="p-elementos" role="tabpanel" hidden></section>
+  <section class="panel" id="p-metodo" role="tabpanel" hidden></section>
+</main>
+
+<div class="drawer" id="drawer" hidden><div class="dpane" id="dpane"></div></div>
+<div id="tip" hidden></div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById("data").textContent);
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const n = (v, d) => v === null || v === undefined ? "--" : Number(v).toFixed(d === undefined ? 1 : d);
+
+/* ---------- tema ---------- */
+const root = document.documentElement;
+$("#themebtn").onclick = () => {
+  const dark = matchMedia("(prefers-color-scheme:dark)").matches;
+  const cur = root.getAttribute("data-theme") || (dark ? "dark" : "light");
+  root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  redrawCharts();
+};
+const css = v => getComputedStyle(root).getPropertyValue(v).trim();
+
+/* ---------- tooltip ---------- */
+const tip = $("#tip");
+function showTip(e, html) {
+  tip.innerHTML = html; tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+  tip.style.left = Math.max(8, x) + "px"; tip.style.top = Math.max(8, y) + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+addEventListener("scroll", hideTip, true);
+
+/* ---------- cabecera ---------- */
+const totalShort = Object.values(D.materials).reduce((a, v) => a + v.length, 0);
+$("#runstats").innerHTML = [
+  [D.total_evaluated.toLocaleString("es-ES"), "composiciones evaluadas"],
+  [totalShort, "candidatos en lista corta"],
+  [D.fuels.length, "combustibles comparados"],
+  [Object.keys(D.environments).length, "bancos de ensayo"],
+  [D.data_quality.hmix_pairs.total, "pares con entalpia"],
+].map(([v, l]) => `<div class="runstat"><b>${v}</b><span>${l}</span></div>`).join("");
+
+/* ---------- pestanas ---------- */
+const TABS = [["materiales", "Materiales"], ["combustibles", "Combustibles"],
+  ["ensayos", "Banco de ensayos"], ["elementos", "Elementos"], ["metodo", "Metodo y limites"]];
+$("#tabrow").innerHTML = TABS.map(([k, l], i) =>
+  `<button class="tab" role="tab" data-t="${k}" aria-selected="${i === 0}">${l}</button>`).join("");
+$("#tabrow").onclick = e => {
+  const b = e.target.closest(".tab"); if (!b) return;
+  TABS.forEach(([k]) => {
+    const on = k === b.dataset.t;
+    $(`#p-${k}`).hidden = !on;
+    $(`.tab[data-t="${k}"]`).setAttribute("aria-selected", on);
+  });
+  redrawCharts();
+};
+
+const VERDICT_CLASS = { ok: "ok", limite: "lim", fallo: "bad", no_evaluable: "nd" };
+const VERDICT_TEXT = { ok: "OK", limite: "LIMITE", fallo: "FALLO", no_evaluable: "SIN DATO" };
+
+/* =======================================================================
+   MATERIALES
+   ======================================================================= */
+let curTarget = Object.keys(D.targets)[0];
+
+function renderMateriales() {
+  const t = D.targets[curTarget], f = D.funnels[curTarget], rows = D.materials[curTarget];
+  const steps = [["Composiciones generadas", f.entrada, null],
+    ["Pueden existir (fisica)", f.tras_fisica, 0],
+    ["Dentro de presupuesto", f.tras_precio, 1],
+    ["Sobreviven al entorno", f.tras_entorno, 2],
+    ["Lista corta", f.lista_corta || 0, "tope"]];
+  const max = steps[0][1];
+
+  $("#p-materiales").innerHTML = `
+    <div class="chips" id="tchips">${Object.entries(D.targets).map(([k, v]) =>
+      `<button class="chip" data-k="${k}" aria-pressed="${k === curTarget}">${esc(v.name)}</button>`).join("")}</div>
+
+    <div class="thesis"><b>Por que este objetivo tiene mercado.</b> ${esc(t.thesis)}
+      Entornos de ensayo obligatorios: ${t.envs.map(e => `<span class="tag">${esc(D.environments[e].name)}</span>`).join(" ")}</div>
+
+    <div class="grid2">
+      <div class="card"><div class="hd"><h3>El embudo</h3>
+        <span class="sub">cada filtro, de mas barato a mas caro</span></div>
+        <div class="bd"><div class="funnel">${steps.map(([l, v, prev], i) => `
+          <div class="frow"><div class="lbl">${l}</div>
+            <div class="fbar"><i style="width:${Math.max(0.4, v / max * 100)}%"></i></div>
+            <div class="val">${v.toLocaleString("es-ES")}<br><em>${prev === null ? "de partida"
+              : prev === "tope" ? "tope, con diversidad"
+              : "pasa el " + (v / steps[i - 1][1] * 100).toFixed(0) + "%"}</em></div>
+          </div>`).join("")}</div>
+          <p class="note" style="margin-top:12px">La lista corta esta limitada a 30 y como maximo a
+          dos variantes por familia de elementos: sin ese tope, el ranking se llena de la misma
+          aleacion con proporciones ligeramente distintas y deja de informar.</p>
+        </div></div>
+
+      <div class="card"><div class="hd"><h3>Como se puntua</h3>
+        <span class="sub">pesos explicitos, para poder discutirlos</span></div>
+        <div class="bd"><div class="funnel">${Object.entries(t.props).map(([k, v]) => `
+          <div class="frow"><div class="lbl">${({ tm: "Punto de fusion", oxidation: "Resistencia a oxidacion", density: "Baja densidad", stiffness: "Rigidez especifica" })[k]}</div>
+            <div class="fbar"><i style="width:${v * 100}%"></i></div>
+            <div class="val">${(v * 100).toFixed(0)}%</div></div>`).join("")}
+          </div>
+          <p class="note" style="margin-top:12px">Estos pesos de propiedad valen la mitad de la nota final.
+          El resto sale del comportamiento en el banco de ensayos (25%) y de la viabilidad
+          comercial &mdash; precio, suministro y facilidad de fabricacion (25%).</p>
+        </div></div>
+    </div>
+
+    <div class="card"><div class="hd"><h3>Lista corta</h3>
+      <span class="sub">en cursiva, materiales reales de referencia para comparar</span></div>
+      <div class="bd flush"><div class="tscroll"><table>
+      <thead><tr><th>#</th><th>Composicion</th><th>Nota</th><th>Fase</th>
+        <th class="num">Tm (K)</th><th class="num">Densidad</th><th class="num">USD/kg</th>
+        <th class="num">Ensayo</th><th>Oxidacion</th><th>Dato</th></tr></thead>
+      <tbody id="mbody"></tbody></table></div></div></div>`;
+
+  const bench = D.benchmarks.map(b => Object.assign({}, b, { _bench: true }));
+  const all = rows.concat(bench);
+  $("#mbody").innerHTML = all.map((a, i) => `
+    <tr data-i="${i}" class="${a._bench ? "bench" : ""}">
+      <td class="rank">${a._bench ? "ref" : a.rank}</td>
+      <td class="nm">${esc(a.name)}</td>
+      <td>${a._bench ? '<span class="tag">referencia</span>' : `<span class="score"><b>${n(a.score)}</b>
+        <span class="sbar"><i style="width:${a.score}%"></i></span></span>`}</td>
+      <td>${a.phase === "disolucion_solida"
+        ? `<span class="pill ok">${a.structure}</span>` : `<span class="pill nd">${esc(a.phase)}</span>`}</td>
+      <td class="num">${n(a.tm_mean_K, 0)}</td><td class="num">${n(a.density, 2)}</td>
+      <td class="num">${n(a.price_usd_kg, a.price_usd_kg > 500 ? 0 : 1)}</td>
+      <td class="num">${a.env_score !== undefined && a.env_score !== null ? n(a.env_score, 0) : "--"}</td>
+      <td><span class="pill ${a.oxidation.class === "sin_proteccion" ? "bad" : "ok"}">${esc(a.oxidation.class)}</span></td>
+      <td><span class="tag">${a.data_quality === "tabulado" ? "alta" : a.data_quality === "nivel2" ? "media" : "estimado"}</span></td>
+    </tr>`).join("");
+  $("#mbody").onclick = e => { const r = e.target.closest("tr"); if (r) openAlloy(all[+r.dataset.i]); };
+  $("#tchips").onclick = e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    curTarget = b.dataset.k; renderMateriales();
+  };
+}
+
+function openAlloy(a) {
+  const comp = Object.entries(a.composition).map(([s, c]) =>
+    `<span class="tag">${s} ${(c * 100).toFixed(1)}%</span>`).join(" ");
+  const reports = Object.values(a.env_reports || {});
+  const tests = reports.filter(r => r.results).map(r => `
+    <div class="dsec"><h4>${esc(r.env_name)} &mdash; ${r.T} K, ${r.P} bar</h4>
+      ${r.results.map(t => `<div class="test"><div class="th"><b>${esc(t.label)}</b>
+        <span class="pill ${VERDICT_CLASS[t.verdict]}">${VERDICT_TEXT[t.verdict]}</span></div>
+        <p>${esc(t.detail)}</p></div>`).join("")}</div>`).join("");
+
+  const flags = [];
+  if (a.data_quality === "estimado")
+    flags.push(`<div class="warn"><b>Dato estimado.</b> La entalpia de mezcla de
+      ${a.estimated_pairs.join(", ")} no esta tabulada: se calcula con el modelo de Miedema,
+      cuyo error medio medido contra los pares conocidos es de 7 kJ/mol.</div>`);
+  if (a.data_quality === "nivel2")
+    flags.push(`<div class="warn"><b>Dato de confianza media.</b> Usa los pares
+      ${a.tier2_pairs.join(", ")}, del bloque de menor confianza de transcripcion.</div>`);
+  if (a.structure_confidence === "baja")
+    flags.push(`<div class="warn"><b>Estructura fuera de dominio.</b> ${esc(a.structure_why)}</div>`);
+  if (a.toxic_elements && a.toxic_elements.length)
+    flags.push(`<div class="warn"><b>Elementos toxicos:</b> ${a.toxic_elements.join(", ")}.</div>`);
+  if (a.manufacturability_notes && a.manufacturability_notes.length)
+    flags.push(`<div class="warn"><b>Fabricacion:</b> ${a.manufacturability_notes.join(". ")}.</div>`);
+
+  const kv = (l, v) => `<div><dt>${l}</dt><dd>${v}</dd></div>`;
+  $("#dpane").innerHTML = `
+    <div class="dhd"><div><h2>${esc(a.name)}</h2>
+      <div class="sub">${a.is_benchmark ? "Material real de referencia" :
+        "Candidato #" + a.rank + " para " + esc(D.targets[a.target].name)}</div></div>
+      <button class="dclose" id="dclose" aria-label="Cerrar">&times;</button></div>
+    <div class="dbd">
+      <div class="dsec"><h4>Composicion</h4><div class="chips">${comp}</div></div>
+      ${flags.join("")}
+      <div class="dsec"><h4>Criterios de formacion de fase</h4><dl class="kv">
+        ${kv("Desajuste atomico &delta;", n(a.delta_pct, 2) + " %")}
+        ${kv("Entalpia de mezcla", n(a.dh_mix, 1) + " kJ/mol")}
+        ${kv("Entropia de mezcla", n(a.ds_mix, 2) + " J/mol&middot;K")}
+        ${kv("Parametro &Omega;", a.omega_infinite ? "&infin;" : n(a.omega, 2))}
+        ${kv("VEC", n(a.vec, 2))}
+        ${kv("Dispersion electroneg.", n(a.d_chi, 3))}</dl>
+        <p class="note" style="margin-top:9px"><b>Fase prevista:</b> ${esc(a.phase)} (${a.structure}).
+        ${esc(a.phase_why)}.</p></div>
+      <div class="dsec"><h4>Propiedades estimadas</h4><dl class="kv">
+        ${kv("Punto de fusion", n(a.tm_mean_K, 0) + " K")}
+        ${kv("Densidad", n(a.density, 2) + " g/cm&sup3;")}
+        ${kv("Modulo de Young", a.modulus_GPa ? n(a.modulus_GPa, 0) + " GPa" : "--")}
+        ${kv("Rigidez especifica", a.specific_stiffness ? n(a.specific_stiffness, 1) : "--")}
+        ${kv("Conductividad termica", a.k_th ? n(a.k_th, 1) + " W/m&middot;K" : "--")}
+        ${kv("Materia prima", n(a.price_usd_kg, 1) + " USD/kg")}</dl>
+        <p class="note" style="margin-top:9px">${esc(a.oxidation.note)}.</p></div>
+      ${a.supply_score !== undefined ? `<div class="dsec"><h4>Viabilidad comercial</h4><dl class="kv">
+        ${kv("Nota de rendimiento", n(a.perf_score, 0) + " / 100")}
+        ${kv("Nota comercial", n(a.commercial_score, 0) + " / 100")}
+        ${kv("Seguridad de suministro", n(a.supply_score, 0) + " / 100")}
+        ${kv("Fabricabilidad", n(a.manufacturability, 0) + " / 100")}</dl></div>` : ""}
+      <div class="dsec"><h4>Actas de ensayo</h4>${tests || '<p class="note">Sin actas detalladas.</p>'}</div>
+    </div>`;
+  $("#drawer").hidden = false;
+  $("#dclose").onclick = closeDrawer;
+}
+function closeDrawer() { $("#drawer").hidden = true; }
+$("#drawer").onclick = e => { if (e.target.id === "drawer") closeDrawer(); };
+addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+/* =======================================================================
+   COMBUSTIBLES
+   ======================================================================= */
+let curMarket = Object.keys(D.markets)[0];
+const FAM = f => f.cls === "formulacion" ? 3
+  : (f.cls === "metal" ? 2
+    : (["hidrogeno", "portador_h2", "hidruro"].includes(f.cls) ? 0 : 1));
+const FAM_NAME = ["Hidrogeno y portadores", "Hidrocarburos, alcoholes y derivados",
+  "Metales en polvo", "Formulaciones mezcladas"];
+const FAM_VAR = ["--c1", "--c2", "--c3", "--c4"];
+
+function renderCombustibles() {
+  const m = D.markets[curMarket], rank = D.fuel_rankings[curMarket];
+  $("#p-combustibles").innerHTML = `
+    <div class="chips" id="mchips">${Object.entries(D.markets).map(([k, v]) =>
+      `<button class="chip" data-k="${k}" aria-pressed="${k === curMarket}">${esc(v.name)}</button>`).join("")}</div>
+    <div class="thesis"><b>Que valora este mercado.</b> ${esc(m.why)}
+      ${Object.entries(m.w).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1])
+        .map(([k, v]) => `<span class="tag">${({ gravimetric: "MJ/kg", volumetric: "MJ/L", cost: "coste", co2: "CO2", trl: "madurez", safety: "seguridad" })[k]} ${(v * 100).toFixed(0)}%</span>`).join(" ")}</div>
+
+    <div class="card"><div class="hd"><h3>El plano que decide todo: energia por kilo frente a energia por litro</h3>
+      <span class="sub">tras descontar lo que cuesta almacenarlo</span></div>
+      <div class="bd"><div class="figure">
+        <div class="chartbox" id="scatter"></div>
+        <div class="legend">${FAM_NAME.map((l, i) =>
+          `<span><i class="swatch" style="background:var(${FAM_VAR[i]})"></i>${l}</span>`).join("")}</div>
+        <p class="note">Cada combustible cae donde lo ponen sus dos numeros duros. El queroseno ocupa
+        la esquina buena en las dos a la vez, y por eso nadie lo ha desbancado todavia: el hidrogeno
+        gana por goleada en el eje horizontal y pierde estrepitosamente en el vertical.</p>
+      </div></div></div>
+
+    <div class="card"><div class="hd"><h3>Ranking para ${esc(m.name).toLowerCase()}</h3>
+      <span class="sub">la nota es relativa a este conjunto, no absoluta</span></div>
+      <div class="bd flush"><div class="tscroll"><table>
+      <thead><tr><th>#</th><th>Combustible</th><th>Nota</th>
+        <th class="num">MJ/kg util</th><th class="num">MJ/L util</th><th class="num">USD/kWh</th>
+        <th class="num">g CO2/MJ</th><th class="num">TRL</th><th class="num">Seguridad</th><th>Ciclo</th></tr></thead>
+      <tbody id="fbody">${rank.map((f, i) => `
+        <tr data-i="${i}"><td class="rank">${f.rank}</td>
+          <td><b class="nm">${esc(f.name)}</b></td>
+          <td><span class="score"><b>${n(f.score)}</b>
+            <span class="sbar"><i style="width:${f.score}%"></i></span></span></td>
+          <td class="num">${n(f.usable_MJ_kg)}</td><td class="num">${n(f.usable_MJ_L)}</td>
+          <td class="num">${f.cost_usd_kwh === null ? "--" : f.cost_usd_kwh.toFixed(3)}</td>
+          <td class="num">${n(f.co2, 0)}</td><td class="num">${f.trl}</td>
+          <td class="num">${n(f.safety)}</td>
+          <td>${f.regenerable ? '<span class="pill ok">cerrado</span>' : '<span class="pill nd">abierto</span>'}</td>
+        </tr>`).join("")}</tbody></table></div></div></div>`;
+
+  $("#fbody").onclick = e => { const r = e.target.closest("tr"); if (r) openFuel(rank[+r.dataset.i]); };
+  $("#mchips").onclick = e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    curMarket = b.dataset.k; renderCombustibles();
+  };
+  drawScatter();
+}
+
+function drawScatter() {
+  const box = $("#scatter"); if (!box) return;
+  const W = Math.max(320, box.clientWidth || 720), H = Math.min(430, Math.max(300, W * 0.56));
+  const M = { t: 14, r: 18, b: 44, l: 56 };
+  const fs = D.fuels.filter(f => f.usable_MJ_kg > 0);
+  const xMax = 130, yMax = 90;
+  const X = v => M.l + v / xMax * (W - M.l - M.r);
+  const Y = v => H - M.b - v / yMax * (H - M.t - M.b);
+  const ink3 = css("--ink3"), ink2 = css("--ink2"), bd = css("--border"), sf = css("--surface");
+  const LABELLED = {
+    jeta1: [9, -9, "Queroseno"], diesel: [9, 15, "Diesel"],
+    h2_liq: [10, 4, "H2 liquido"], h2_700: [-9, 4, "H2 700 bar"],
+    metal_b: [-7, -10, "Boro"], metal_al: [-5, -11, "Aluminio"],
+    metal_fe: [9, -7, "Hierro"], nh3: [10, 5, "Amoniaco"],
+    metanol: [10, 5, "Metanol"], ch4_lng: [10, 4, "GNL"] };
+  let g = "";
+  for (let v = 0; v <= xMax; v += 26)
+    g += `<line x1="${X(v)}" y1="${M.t}" x2="${X(v)}" y2="${H - M.b}" stroke="${bd}" stroke-width="1"/>
+      <text x="${X(v)}" y="${H - M.b + 17}" fill="${ink3}" font-size="10.5" text-anchor="middle">${v}</text>`;
+  for (let v = 0; v <= yMax; v += 18)
+    g += `<line x1="${M.l}" y1="${Y(v)}" x2="${W - M.r}" y2="${Y(v)}" stroke="${bd}" stroke-width="1"/>
+      <text x="${M.l - 8}" y="${Y(v) + 3.5}" fill="${ink3}" font-size="10.5" text-anchor="end">${v}</text>`;
+  let marks = "", labels = "";
+  fs.forEach((f, i) => {
+    const fam = FAM(f), c = css(FAM_VAR[fam]);
+    const cx = X(Math.min(f.usable_MJ_kg, xMax)), cy = Y(Math.min(f.usable_MJ_L, yMax));
+    marks += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${f.cls === "formulacion" ? 5.5 : 6}"
+      fill="${c}" stroke="${sf}" stroke-width="2" data-f="${i}" style="cursor:pointer"/>`;
+    const off = LABELLED[f.id];
+    if (off) labels += `<text x="${(cx + off[0]).toFixed(1)}" y="${(cy + off[1]).toFixed(1)}"
+      fill="${ink2}" font-size="10.5" font-weight="500"
+      text-anchor="${off[0] < 0 ? "end" : "start"}">${esc(off[2])}</text>`;
+  });
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img"
+    aria-label="Dispersion de energia por kilo frente a energia por litro">
+    ${g}<line x1="${M.l}" y1="${H - M.b}" x2="${W - M.r}" y2="${H - M.b}" stroke="${css("--border-strong")}" stroke-width="1"/>
+    <line x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${H - M.b}" stroke="${css("--border-strong")}" stroke-width="1"/>
+    ${marks}${labels}
+    <text x="${(M.l + W - M.r) / 2}" y="${H - 6}" fill="${ink2}" font-size="11" text-anchor="middle">Energia utilizable por kilo (MJ/kg)</text>
+    <text transform="translate(14 ${(M.t + H - M.b) / 2}) rotate(-90)" fill="${ink2}" font-size="11" text-anchor="middle">Energia utilizable por litro (MJ/L)</text>
+  </svg>`;
+  box.querySelectorAll("circle[data-f]").forEach(el => {
+    const f = fs[+el.dataset.f];
+    el.addEventListener("mousemove", e => showTip(e, `<b>${esc(f.name)}</b><br>
+      ${n(f.usable_MJ_kg)} MJ/kg &middot; ${n(f.usable_MJ_L)} MJ/L<br>
+      <span style="color:var(--ink2)">${f.cost_usd_kwh === null ? "" : f.cost_usd_kwh.toFixed(3) + " USD/kWh &middot; "}TRL ${f.trl}</span>`));
+    el.addEventListener("mouseleave", hideTip);
+    el.addEventListener("click", () => openFuel(f));
+  });
+}
+
+function openFuel(f) {
+  const kv = (l, v) => `<div><dt>${l}</dt><dd>${v}</dd></div>`;
+  const comps = f.components ? `<div class="dsec"><h4>Componentes (fraccion en masa)</h4>
+    <div class="chips">${Object.entries(f.components).map(([k, v]) =>
+      `<span class="tag">${esc(k)} ${(v * 100).toFixed(0)}%</span>`).join(" ")}</div></div>` : "";
+  const br = f.breakdown ? `<div class="dsec"><h4>De donde sale la nota en este mercado</h4>
+    <div class="funnel">${Object.entries(D.markets[curMarket].w).filter(([, w]) => w > 0)
+      .sort((a, b) => b[1] - a[1]).map(([k, w]) => `
+      <div class="frow"><div class="lbl">${({ gravimetric: "Energia por kilo", volumetric: "Energia por litro", cost: "Coste por kWh", co2: "Emisiones", trl: "Madurez", safety: "Seguridad" })[k]}</div>
+      <div class="fbar"><i style="width:${(f.breakdown[k] * 100).toFixed(0)}%;background:var(--fuel)"></i></div>
+      <div class="val">${(f.breakdown[k] * 100).toFixed(0)}<em> &times;${(w * 100).toFixed(0)}%</em></div></div>`).join("")}</div></div>` : "";
+  $("#dpane").innerHTML = `
+    <div class="dhd"><div><h2>${esc(f.name)}</h2>
+      <div class="sub">${esc(f.formula)} &middot; ${esc(f.store)}</div></div>
+      <button class="dclose" id="dclose" aria-label="Cerrar">&times;</button></div>
+    <div class="dbd">
+      <p class="note">${esc(f.note || "")}</p>
+      ${comps}
+      <div class="dsec"><h4>Energia</h4><dl class="kv">
+        ${kv("Poder calorifico inferior", n(f.lhv) + " MJ/kg")}
+        ${kv("Por litro almacenado", n(f.MJ_per_L) + " MJ/L")}
+        ${kv("Penalizacion de almacenaje", (f.penalty * 100).toFixed(0) + " %")}
+        ${kv("Energia util por kilo", n(f.usable_MJ_kg) + " MJ/kg")}
+        ${kv("Energia util por litro", n(f.usable_MJ_L) + " MJ/L")}
+        ${kv("Densidad almacenada", n(f.rho_store, 0) + " kg/m&sup3;")}</dl>
+        ${f.penalty > 0 ? `<p class="note" style="margin-top:9px">La penalizacion del
+        ${(f.penalty * 100).toFixed(0)}% es la energia que se gasta en llevarlo a su estado de
+        almacenamiento (licuefaccion o compresion) y que ya no llega al motor.</p>` : ""}</div>
+      <div class="dsec"><h4>Economia y emisiones</h4><dl class="kv">
+        ${kv("Coste por kWh util", f.cost_usd_kwh === null ? "--" : f.cost_usd_kwh.toFixed(3) + " USD")}
+        ${kv("Precio de materia prima", n(f.price, 2) + " USD/kg")}
+        ${kv("CO2 directo", n(f.co2, 1) + " g/MJ")}
+        ${kv("CO2 por MWh", n(f.co2_kg_per_MWh, 0) + " kg")}
+        ${kv("Madurez (TRL)", f.trl + " / 9")}
+        ${kv("Indice de seguridad", n(f.safety) + " / 10")}</dl>
+        <p class="note" style="margin-top:9px">El CO2 mostrado es <b>solo el de la combustion</b>.
+        No incluye la huella de produccion: un hidrogeno obtenido de gas natural sale a cero en esta
+        columna y ronda los 100 g/MJ en el ciclo completo. Es la cifra que mas se manipula en el sector.</p></div>
+      ${br}
+    </div>`;
+  $("#drawer").hidden = false;
+  $("#dclose").onclick = closeDrawer;
+}
+
+/* =======================================================================
+   BANCO DE ENSAYOS
+   ======================================================================= */
+function renderEnsayos() {
+  const envs = Object.entries(D.environments);
+  const mats = D.benchmarks;
+  const cls = { ok: "ok", limite: "lim", fallo: "bad", no_evaluable: "nd" };
+  $("#p-ensayos").innerHTML = `
+    <div class="thesis"><b>Aqui se valida el motor.</b> Estos ocho materiales son reales y su
+      comportamiento esta publicado: si la matriz no reproduce lo que ya se sabe de ellos, ningun
+      candidato nuevo merece credito. Pasa el raton por una celda para ver el acta.</div>
+    <div class="card"><div class="hd"><h3>Materiales reales contra cada banco de ensayo</h3>
+      <span class="sub">nota media de los ensayos del entorno</span></div>
+      <div class="bd flush"><div class="matrix"><table>
+        <thead><tr><th style="background:var(--surface)"></th>
+          ${envs.map(([, e]) => `<th class="rot"><div>${esc(e.name)}</div></th>`).join("")}</tr></thead>
+        <tbody>${mats.map((m, mi) => `<tr><td class="mname">${esc(m.name)}</td>
+          ${envs.map(([k]) => {
+            const r = m.env_reports[k];
+            const worst = r.results.some(t => t.verdict === "fallo") ? "bad"
+              : r.results.some(t => t.verdict === "no_evaluable") ? "nd"
+              : r.results.some(t => t.verdict === "limite") ? "lim" : "ok";
+            return `<td class="cell" data-m="${mi}" data-e="${k}">
+              <i class="pill ${worst}">${r.score === null ? "--" : r.score}</i></td>`;
+          }).join("")}</tr>`).join("")}</tbody></table></div></div></div>
+    <div class="card"><div class="hd"><h3>Los bancos de ensayo</h3></div><div class="bd">
+      <div class="grid2">${envs.map(([, e]) => `
+        <div><h4 style="font-size:14px;margin-bottom:4px">${esc(e.name)}</h4>
+          <p class="note" style="margin-bottom:6px"><span class="tag">${e.T} K</span>
+            <span class="tag">${e.P} bar</span> <span class="tag">${esc(e.atm)}</span>
+            ${e.market ? `<span class="tag">${esc(e.market)}</span>` : ""}</p>
+          <p class="note">${esc(e.desc)}</p></div>`).join("")}</div></div></div>`;
+
+  $("#p-ensayos").querySelectorAll(".cell").forEach(td => {
+    const m = mats[+td.dataset.m], r = m.env_reports[td.dataset.e];
+    const html = `<b>${esc(m.name)}</b><br><span style="color:var(--ink2)">${esc(r.env_name)}</span><br>` +
+      r.results.map(t => `<span style="color:var(--${cls[t.verdict] === "ok" ? "ok" : cls[t.verdict] === "lim" ? "lim" : cls[t.verdict] === "bad" ? "bad" : "nd"})">&#9632;</span> ${esc(t.label)}: ${VERDICT_TEXT[t.verdict]}`).join("<br>");
+    td.addEventListener("mousemove", e => showTip(e, html));
+    td.addEventListener("mouseleave", hideTip);
+  });
+}
+
+/* =======================================================================
+   ELEMENTOS
+   ======================================================================= */
+const PROPS = [["tm_K", "Punto de fusion", "K", 0], ["rho", "Densidad", "g/cm3", 2],
+  ["price", "Precio", "USD/kg", 2], ["abund_ppm", "Abundancia en la corteza", "ppm", 3],
+  ["en", "Electronegatividad", "Pauling", 2], ["E_GPa", "Modulo de Young", "GPa", 0],
+  ["k_th", "Conductividad termica", "W/m&middot;K", 1], ["dHox", "Avidez por el oxigeno", "kJ/mol O", 0]];
+let curProp = "tm_K";
+const LOGPROPS = new Set(["price", "abund_ppm"]);
+
+function renderElementos() {
+  $("#p-elementos").innerHTML = `
+    <div class="chips" id="pchips">${PROPS.map(([k, l]) =>
+      `<button class="chip" data-k="${k}" aria-pressed="${k === curProp}">${l}</button>`).join("")}</div>
+    <div class="thesis"><b>Estos son los ladrillos.</b> ${D.elements.length} elementos con datos
+      verificados. Los que aparecen atenuados no tienen ese dato tabulado, y el motor lo trata como
+      hueco declarado: nunca rellena a ojo. Pasa el raton por cualquiera.</div>
+    <div class="card"><div class="hd"><h3 id="ptitle"></h3><span class="sub" id="ptsub"></span></div>
+      <div class="bd"><div class="pt-wrap"><div class="ptable" id="ptable"></div></div>
+        <div class="legend" style="margin-top:12px" id="ptlegend"></div></div></div>`;
+  drawPeriodic();
+  $("#pchips").onclick = e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    curProp = b.dataset.k;
+    $("#pchips").querySelectorAll(".chip").forEach(c =>
+      c.setAttribute("aria-pressed", c.dataset.k === curProp));
+    drawPeriodic();
+  };
+}
+
+function drawPeriodic() {
+  const [, label, unit, dec] = PROPS.find(p => p[0] === curProp);
+  const vals = D.elements.map(e => e[curProp]).filter(v => v !== null);
+  const useLog = LOGPROPS.has(curProp);
+  const tf = v => useLog ? Math.log10(Math.max(v, 1e-6)) : v;
+  const lo = Math.min(...vals.map(tf)), hi = Math.max(...vals.map(tf));
+  const ramp = ["--ramp0", "--ramp1", "--ramp2", "--ramp3", "--ramp4", "--ramp5"];
+  const bucket = v => Math.min(5, Math.max(0, Math.floor((tf(v) - lo) / (hi - lo + 1e-9) * 6)));
+
+  $("#ptitle").innerHTML = label;
+  $("#ptsub").innerHTML = `medido en ${unit}${useLog ? ", en escala logaritmica porque abarca varios ordenes de magnitud" : ""}`;
+  $("#ptlegend").innerHTML = ramp.map((r, i) => {
+    const a = lo + (hi - lo) * i / 6, b = lo + (hi - lo) * (i + 1) / 6;
+    const f = x => useLog ? Math.pow(10, x) : x;
+    return `<span><i class="swatch" style="background:var(${r})"></i>
+      <span class="mono">${f(a).toPrecision(2)}&ndash;${f(b).toPrecision(2)}</span></span>`;
+  }).join("");
+
+  const byPos = {};
+  const lan = [], act = [];
+  D.elements.forEach(e => {
+    if (e.cat === "lantanido") { lan.push(e); return; }
+    if (e.cat === "actinido") { act.push(e); return; }
+    byPos[e.per + ":" + e.grp] = e;
+  });
+  const cell = e => {
+    if (!e) return `<div></div>`;
+    const v = e[curProp];
+    const bg = v === null ? "var(--surface2)" : `var(${ramp[bucket(v)]})`;
+    const dark = v !== null && bucket(v) >= 4;
+    return `<div class="el${v === null ? " dim" : ""}" style="background:${bg}${dark ? ";color:#fff;border-color:transparent" : ""}"
+      data-s="${e.sym}"><b>${e.sym}</b><s>${v === null ? "--" : (useLog && v < 0.01 ? v.toExponential(0) : Number(v).toFixed(dec))}</s></div>`;
+  };
+  let html = "";
+  for (let p = 1; p <= 7; p++)
+    for (let g = 1; g <= 18; g++) html += cell(byPos[p + ":" + g]);
+  html += `<div style="grid-column:1/19;height:7px"></div>`;
+  html += `<div style="grid-column:1/4"></div>` + lan.sort((a, b) => a.Z - b.Z).map(cell).join("");
+  html += `<div style="grid-column:1/19;height:2px"></div>`;
+  html += `<div style="grid-column:1/4"></div>` + act.sort((a, b) => a.Z - b.Z).map(cell).join("");
+  $("#ptable").innerHTML = html;
+
+  $("#ptable").querySelectorAll(".el").forEach(el => {
+    const e = D.elements.find(x => x.sym === el.dataset.s);
+    const rows = PROPS.map(([k, l, u, d]) => `${l}: <b>${e[k] === null ? "sin dato" :
+      Number(e[k]).toFixed(d) + " " + u}</b>`).join("<br>");
+    const flags = [e.tox >= 2 ? "toxico" : "", e.crit ? "materia prima critica UE" : "",
+      e.radio ? "radiactivo" : ""].filter(Boolean).join(" &middot; ");
+    el.addEventListener("mousemove", ev => showTip(ev,
+      `<b>${e.sym} &mdash; ${esc(e.name)}</b> (Z=${e.Z})<br>
+       <span style="color:var(--ink2)">${esc(e.cat)} &middot; ${e.struct}</span><br>${rows}
+       ${flags ? `<br><span style="color:var(--bad)">${flags}</span>` : ""}`));
+    el.addEventListener("mouseleave", hideTip);
+  });
+}
+
+/* =======================================================================
+   METODO
+   ======================================================================= */
+function renderMetodo() {
+  const v = D.superheavy.verdict, q = D.data_quality;
+  $("#p-metodo").innerHTML = `
+    <div class="verdict"><h3>${esc(v.question)}</h3>
+      <p><b>${esc(v.answer)}</b> ${esc(v.why)}</p><p>${esc(v.instead)}</p></div>
+
+    <div class="grid2">
+      <div class="card"><div class="hd"><h3>Los tres elementos que faltan por existir</h3></div>
+        <div class="bd"><div class="prose">${D.superheavy.predicted.map(p => `
+          <div><h4>${esc(p.name)} &middot; Z=${p.Z}</h4>
+            <p style="font-size:13px">${esc(p.predicted)}</p>
+            <p style="font-size:12.5px;color:var(--ink3)"><b>Estado:</b> ${esc(p.status)}</p></div>`).join("")}
+        </div></div></div>
+
+      <div class="card"><div class="hd"><h3>Calidad del dato</h3>
+        <span class="sub">de que se fia el motor y de que no</span></div>
+        <div class="bd"><div class="prose">
+          <p>El motor descansa sobre <b>${q.elements} elementos</b> y
+            <b>${q.hmix_pairs.total} pares con entalpia de mezcla</b>, repartidos asi:</p>
+          <ul>
+            <li><b>${q.hmix_pairs.alta} pares de confianza alta</b> &mdash; recopilacion de
+              Takeuchi e Inoue (2005), la tabla que usa la literatura de aleaciones de alta entropia.</li>
+            <li><b>${q.hmix_pairs.media} pares de confianza media</b> &mdash; casi todos sistemas
+              Mg-X y Li-X inmiscibles. El signo esta fuera de duda; el valor exacto puede bailar.</li>
+            <li><b>Estimacion por el modelo de Miedema</b> para los pares no tabulados, y solo entre
+              metales de transicion. Validada contra los 109 pares conocidos:
+              <b>error absoluto medio 7 kJ/mol</b>, el 81% dentro de &plusmn;10.</li>
+          </ul>
+          <p>Cuando no hay base para un numero, el motor devuelve <code>desconocido</code> y descarta
+            el candidato. Nunca rellena con cero: un cero pasaria el filtro de disolucion solida y
+            colaria aleaciones que no existen hasta el ranking final.</p>
+        </div></div></div>
+    </div>
+
+    <div class="card"><div class="hd"><h3>Que calcula exactamente, y con que criterio publicado</h3></div>
+      <div class="bd"><div class="prose">
+        <h4>Formacion de fase</h4>
+        <p>Criterio de Yang y Zhang (2012): una composicion forma disolucion solida si el desajuste
+          de tamano atomico <code>&delta; &le; 6.6%</code> y el parametro
+          <code>&Omega; = Tm&middot;&Delta;Smix / |&Delta;Hmix| &ge; 1.1</code>. Su acierto publicado
+          sobre el corpus de aleaciones conocidas ronda el 85-90%.</p>
+        <h4>Estructura cristalina</h4>
+        <p>Regla del VEC (Guo, 2011): <code>VEC &ge; 8</code> da FCC, <code>&lt; 6.87</code> da BCC, y
+          en medio conviven las dos. <b>Se calibro con aleaciones concentradas</b>, asi que fuera de
+          ese dominio el motor lo dice en vez de disimularlo: para un acero diluido marca confianza
+          baja y recuerda que el criterio valido seria el diagrama de Schaeffler, que no implementamos.</p>
+        <h4>Conductividad termica</h4>
+        <p>No por regla de mezclas. La regla de mezclas da 84 W/m&middot;K para un inoxidable 316
+          cuyo valor real es 15, porque ignora que los atomos de soluto dispersan los electrones.
+          Se aplica una correccion tipo Nordheim <code>k = k_mezcla / (1 + 8.9&middot;&Sigma;ci(1-ci))</code>,
+          calibrada sobre ese mismo acero. Contraste: Inconel 718 da 12.9 frente a 11.4 reales.</p>
+        <h4>Corrosion por cloruros</h4>
+        <p>PREN, la formula de norma del sector: <code>%Cr + 3.3&middot;%Mo + 1.65&middot;%W</code>,
+          con umbral 32 para agua de mar. Por eso el motor suspende al inoxidable 316 (PREN ~25) y
+          aprueba al superduplex 2507 (PREN ~42), que es exactamente lo que pasa en la realidad.</p>
+        <h4>Combustibles</h4>
+        <p>Los metales no se copian de ninguna tabla: se derivan de la entalpia de formacion de su
+          oxido dividida por la masa de metal. El contraste contra valores publicados da un error
+          maximo del 1.1% en siete metales.</p>
+      </div></div></div>
+
+    <div class="card"><div class="hd"><h3>Lo que esto NO es</h3>
+      <span class="sub">leer antes de gastar dinero en un candidato</span></div>
+      <div class="bd"><div class="prose">
+        <ul>
+          <li><b>No es DFT ni dinamica molecular.</b> Son reglas empiricas de cribado. Un candidato
+            que pasa todos los filtros es una <b>hipotesis priorizada</b>, no un material verificado.</li>
+          <li><b>Predice formacion, no estabilidad.</b> Muchas aleaciones que cumplen
+            <code>&Omega; &ge; 1.1</code> se descomponen tras mil horas a 900 K. Ese ensayo no esta aqui.</li>
+          <li><b>No dice nada de procesabilidad real:</b> colabilidad, soldabilidad, conformado,
+            tratamiento termico. El indice de fabricabilidad es una penalizacion gruesa, no un estudio.</li>
+          <li><b>Los precios son orden de magnitud.</b> Los metales menores y los del grupo del
+            platino se mueven entre el 50% y el 300% en un ano. Sirven para ordenar, no para presupuestar.</li>
+          <li><b>Las notas son relativas al conjunto evaluado.</b> Anadir o quitar candidatos cambia
+            las notas de todos: es comparacion entre iguales, no una calificacion absoluta.</li>
+          <li><b>El paso siguiente real</b> de cualquier candidato de estas listas es DFT y despues
+            horno de arco y difraccion de rayos X. Este motor solo decide <b>que merece ese gasto</b>.</li>
+        </ul>
+      </div></div></div>
+
+    <p class="note" style="text-align:center">Informe generado el ${esc(D.generated_at.replace("T", " a las ").replace("+00:00", " UTC"))}
+      &middot; ${D.total_evaluated.toLocaleString("es-ES")} composiciones evaluadas en ${D.runtime_s} s</p>`;
+}
+
+/* ---------- arranque ---------- */
+function redrawCharts() { if (!$("#p-combustibles").hidden) drawScatter(); }
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(redrawCharts, 160); });
+renderMateriales(); renderCombustibles(); renderEnsayos(); renderElementos(); renderMetodo();
+</script>

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Mnemesis</string>
-    <string name="accessibility_service_description">Permite a Mnemesis leer la pantalla y ejecutar acciones (toques, gestos, texto) para completar tareas que le pidas. No se comparte ningún dato fuera de este dispositivo salvo con el agente que tú controlas.</string>
-    <string name="status_service_enabled">Servicio de accesibilidad: ACTIVO</string>
-    <string name="status_service_disabled">Servicio de accesibilidad: INACTIVO</string>
-    <string name="status_server_running">Servidor de control escuchando en 127.0.0.1:%1$d</string>
-    <string name="btn_open_settings">Activar accesibilidad</string>
-</resources>

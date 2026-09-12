@@ -81,16 +81,55 @@ de Miriam): tratar con tacto, sin señalar culpables.
 
 ## 🧠 Mnemesis — este repo
 
-`C:\Users\Asus\Mnemesis` · repo `vicsanuiz-crypto/Mnemesis`.
+`repo vicsanuiz-crypto/Mnemesis` · rama `claude/materials-fuels-agent-hhp4xo`.
 
 Dos cosas conviven aquí:
 1. **El conector neuronal** (`CLAUDE.md` + `memory/`) — este cerebro externo.
-2. **Un agente de control Android** (`agent/` en TypeScript + `android/`), en la
-   rama `claude/android-control-agent-3u45kc`. Sin auditar en detalle.
+2. **Mnemesis Forge** (`engine/`, `ui/`, `tests/`) — motor de cribado computacional
+   de materiales y combustibles. Ver abajo.
 
 ⚠️ **Aviso histórico:** una sesión anterior afirmó haber creado y pusheado el
 conector neuronal en la rama `claude/neural-connector-chats-skills-1mbwse`. **Ese
 push nunca llegó** — se verificó con `git ls-remote` y esa rama no existía. Lección:
 **verificar los push, no darlos por hechos.**
+
+### 🗑️ Agente de control Android — RETIRADO (12 sep 2026)
+
+Código eliminado del repo por decisión de Víctor: "no vamos a seguir con el agente
+para el móvil". Vivía en `agent/` (TypeScript + Gemini) y `android/` (Kotlin,
+AccessibilityService). Recuperable desde el historial git o desde la rama
+`claude/android-control-agent-3u45kc`. No se auditó nunca en detalle.
+
+---
+
+## ⚗️ Mnemesis Forge — cribado de materiales y combustibles (12 sep 2026)
+
+Python 3, **cero dependencias**. `python3 engine/report.py && python3 engine/build_ui.py`
+produce `out/mnemesis.html`, un panel autocontenido.
+Interfaz publicada: https://claude.ai/code/artifact/0656834b-2c5e-4049-961f-6ba6e36a4c30
+
+**Qué hace:** genera 132.110 composiciones desde 6 paletas con intención metalúrgica,
+las pasa por un embudo de 3 filtros (física → entorno → economía) y las ordena para
+6 objetivos industriales. Aparte, compara 31 combustibles (13 de referencia, 11
+metálicos derivados de la tabla periódica, 7 formulaciones) contra 6 mercados.
+
+**⛔ Límite declarado desde el minuto uno:** NO crea elementos nuevos. Z>118 exige
+acelerador, produce átomos sueltos que duran milisegundos, valor comercial cero.
+El valor está en las combinaciones, no en elementos inéditos. Está escrito en el
+README, en `engine/superheavy.py` y en la pestaña «Método» de la interfaz.
+
+**Validación (lo que da crédito al motor):** 45 tests contra materiales reales
+publicados. Cantor→FCC, Senkov→BCC, AlCoCrFeNi→dúplex, Inconel 718 ρ=8.29 vs 8.19,
+Zircaloy-4 aprueba reactor, Cantor lo suspende por el cobalto (activación Co-60),
+inox 316 suspende agua de mar (PREN 25) y superduplex 2507 la aprueba (PREN 42),
+7 combustibles metálicos con error máximo 1.1%.
+
+**Criterios:** Yang-Zhang (δ≤6.6%, Ω≥1.1) para fase · VEC de Guo para estructura ·
+Miedema/Takeuchi-Inoue para entalpía · Nordheim para conductividad · PREN para
+cloruros · Kingery para choque térmico · sección eficaz para neutrónica.
+
+**Regla dura de dato:** si no hay base para un número, devuelve `desconocido` y
+descarta el candidato. **Nunca rellena con cero** — un cero pasaría el filtro de
+disolución sólida y colaría aleaciones inexistentes hasta el ranking final.
 
 Relacionado: [[victor]] · [[skills]] · [[connectors]]

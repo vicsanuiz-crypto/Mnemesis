@@ -4,6 +4,49 @@ Entradas nuevas **arriba**. Formato: fecha · qué se decidió · con qué evide
 
 ---
 
+## 12 sep 2026 — Se retira el agente Android y nace Mnemesis Forge
+
+**Decisión de Víctor:** "no vamos a seguir con el agente para el móvil". Se elimina
+`agent/` (TypeScript + Gemini) y `android/` (Kotlin). Recuperable del historial git
+y de la rama `claude/android-control-agent-3u45kc`. **Se conservaron `CLAUDE.md` y
+`memory/`** pese al "borra el contenido del repo": son el cerebro externo, no el
+proyecto retirado. Se le avisó explícitamente por si quería borrarlos también.
+
+**Lo primero que se le dijo, antes de construir nada:** su idea de "construir
+elementos nuevos" **no es posible en software**. Z>118 exige acelerador de iones
+pesados, produce átomos de uno en uno y dura milisegundos: valor comercial cero.
+Lo que sí vale es el cribado de COMBINACIONES, que es lo que se ha construido.
+Esa distinción queda escrita en el README, en `engine/superheavy.py` y en la
+interfaz, para que ninguna sesión futura la difumine.
+
+**Qué se entregó:** motor Python sin dependencias que evalúa 132.110 composiciones
+en ~15 s, las pasa por un embudo física→entorno→economía para 6 objetivos
+industriales, compara 31 combustibles contra 6 mercados, y vuelca todo en un panel
+HTML autocontenido. 45 tests de regresión contra materiales reales publicados.
+
+**Cinco errores propios, encontrados y corregidos con evidencia:**
+1. **Fallback de Miedema fuera de dominio** → daba −0.1 kJ/mol en Ir-Al (real: muy
+   negativo). Se acotó a pares transición-transición. Validado: error medio
+   **7 kJ/mol**, 81% dentro de ±10 sobre 109 pares conocidos.
+2. **Regla de mezclas para conductividad térmica** → 84 W/m·K en un inox 316 cuyo
+   valor real es **15**. Se metió corrección tipo Nordheim, calibrada; Inconel 718
+   da ahora 12.9 frente a 11.4 reales.
+3. **Umbral de choque térmico un orden de magnitud arriba** → suspendía el **100%**
+   de los candidatos. Recalibrado con anclas reales (inox 0.004, W 0.094, Cu 0.187).
+4. **Temperatura de gas confundida con temperatura de metal** → los álabes de
+   turbina real trabajan por encima del punto de fusión de su aleación gracias a
+   refrigeración y barrera térmica. Sin esa distinción, turbina daba 0 supervivientes.
+5. **Normalización lineal de una magnitud que abarca 4 décadas** (coste por kWh):
+   el carbón y el aluminio, con un factor 20 entre ellos, salían casi empatados.
+
+**Dos errores más que resultaron ser del test, no del motor:** di por apto el inox
+316 en agua de mar (no lo es, PREN≈25) y afirmé que el wolframio funde más alto que
+cualquier elemento (es el metal que más; el carbono funde más alto). Todo en [[skills]].
+
+**Interfaz publicada:** https://claude.ai/code/artifact/0656834b-2c5e-4049-961f-6ba6e36a4c30
+
+---
+
 ## 21 jul 2026 — Se construye Mnemesis de verdad + auditoría completa de AI-Trader
 
 **Mnemesis:** se crea el conector neuronal (`CLAUDE.md` + `memory/`) con conocimiento

@@ -1,6 +1,6 @@
 # Mapa del conector neuronal
 
-Última actualización: **21 jul 2026**
+Última actualización: **12 sep 2026**
 
 ## Empieza aquí
 
@@ -20,16 +20,16 @@
                         │  (victor.md) │  trading · trato de "socio"
                         └──────┬───────┘
                                │
-        ┌──────────────────────┼──────────────────────┐
-        │                      │                      │
-   ┌────▼─────┐          ┌─────▼──────┐        ┌──────▼──────┐
-   │ AI-TRADER│          │   LOMLOE   │        │ CFO FAMILIAR│
-   │ trading  │          │  docencia  │        │  finanzas   │
-   │  (papel) │          │   (PWA)    │        │  del hogar  │
-   └────┬─────┘          └────────────┘        └──────┬──────┘
-        │                                             │
-        │  comparten método:                          │
-        └──────────► [[skills]] ◄─────────────────────┘
+        ┌───────────────┬──────┴───────┬───────────────┐
+        │               │              │               │
+   ┌────▼─────┐   ┌─────▼──────┐   ┌───▼─────────┐   ┌─▼────────┐
+   │ AI-TRADER│   │   LOMLOE   │   │ CFO FAMILIAR│   │  FORGE   │
+   │ trading  │   │  docencia  │   │  finanzas   │   │materiales│
+   │  (papel) │   │   (PWA)    │   │  del hogar  │   │ y combus.│
+   └────┬─────┘   └────────────┘   └──────┬──────┘   └────┬─────┘
+        │                                 │               │
+        │  comparten método:              │               │
+        └──────────► [[skills]] ◄─────────┴───────────────┘
               "validar con datos antes de desplegar"
               "hacer yo el trabajo, no delegárselo"
 ```
@@ -42,7 +42,8 @@
 - **AI-Trader** → en papel, agentes auditados uno a uno; regla de oro sin cumplir aún.
 - **LOMLOE** → app docente en producción (Netlify + Firebase).
 - **CFO familiar** → análisis manual mensual del extracto ING; desfase ~2.000 €/mes.
-- **Mnemesis** → este cerebro + un agente de control Android en `agent/` y `android/`.
+- **Mnemesis** → este cerebro + **Mnemesis Forge**, motor de cribado de materiales
+  y combustibles. El agente Android se retiró el 12 sep 2026.
 
 ## Huecos conocidos (para rellenar en futuras sesiones)
 

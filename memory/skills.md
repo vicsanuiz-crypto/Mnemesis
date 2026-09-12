@@ -31,6 +31,54 @@ sobreajuste. Herramientas: `backtest-*.mjs` en el repo de AI-Trader.
    rate-limit y pareció que todos sus modelos estaban muertos. Verificar con
    llamadas espaciadas antes de declarar algo roto.
 
+## Un hueco declarado vale más que un número inventado
+
+**Cuando no hay base para un dato, devolver `desconocido` y descartar, nunca
+rellenar con un valor por defecto.** (Origen: Mnemesis Forge, sep 2026.) En el motor
+de aleaciones, un `0` en la entalpía de mezcla no es neutro: **pasa el filtro de
+disolución sólida**, así que rellenar huecos con cero habría colado aleaciones
+inexistentes hasta el ranking final, indistinguibles de las buenas. El valor por
+defecto más «inocuo» suele ser el que más contamina.
+
+Corolario: **acotar el dominio de un modelo en vez de extrapolarlo.** El fallback de
+Miedema daba −0.1 kJ/mol para Ir-Al (real: fuertemente exotérmico) porque en pares
+transición/no-transición falta un término R. Solución correcta: restringir el modelo
+a su dominio válido y declarar el resto desconocido. Al validarlo contra los 109
+pares conocidos dentro de ese dominio: **error medio 7 kJ/mol, 81% dentro de ±10**.
+
+## Escala equivocada = filtro que suspende a todo el mundo
+
+**Antes de fijar un umbral, calcular el valor de dos o tres casos conocidos con la
+propia fórmula.** (Origen: Mnemesis Forge, sep 2026.) Puse el umbral del índice de
+choque térmico un orden de magnitud arriba porque recordé mal la escala. Síntoma:
+**el 100% de los candidatos suspendía** el ensayo. Un filtro que rechaza todo o
+acepta todo es casi siempre un umbral mal calibrado, no un hallazgo.
+
+Relacionado: **una regla de mezclas no vale para cualquier propiedad.** Para
+densidad va bien; para conductividad térmica da 84 W/m·K en un inox 316 cuyo valor
+real es **15**, porque los átomos de soluto dispersan los electrones. Hubo que meter
+una corrección tipo Nordheim. Contraste tras arreglarlo: Inconel 718 da 12.9 frente
+a 11.4 reales.
+
+## Normalizar en lineal lo que abarca décadas
+
+**Si una magnitud abarca varios órdenes de magnitud, normalizar en logaritmo.**
+(Origen: Mnemesis Forge, sep 2026.) El coste por kWh iba de 0.014 a 61 USD. Con
+min-max lineal, el outlier caro aplastaba la escala y el carbón y el aluminio —que
+se llevan un **factor 20**— quedaban prácticamente empatados en el eje de coste.
+
+## Validar contra la realidad publicada, no contra uno mismo
+
+**Los tests de un motor predictivo deben contrastar contra casos reales conocidos,
+no contra su propia salida.** (Origen: Mnemesis Forge, sep 2026.) Las 45
+comprobaciones miden si el motor reproduce lo que ya se sabe: Zircaloy-4 aprueba el
+reactor, el inox 316 suspende agua de mar, el acero al carbono se rompe en criogenia.
+
+**Y cuando un test falla, la primera hipótesis es que el test está mal.** De los
+cuatro fallos iniciales, **dos eran errores míos en el enunciado del test**: di por
+apto el inox 316 en agua de mar (no lo es, PREN≈25) y afirmé que el wolframio funde
+más alto que cualquier elemento (el carbono funde más alto; es el metal que más).
+
 ## Observabilidad: los fallos silenciosos son los caros
 
 **Un fallo nunca debe parecerse a un resultado normal.** (Origen: AI-Trader, jul 2026.)
